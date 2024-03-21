@@ -379,3 +379,53 @@ SELECT * FROM NOTIFICATION;
 
 SELECT * FROM EMPLOYEE_NOTIFICATION;
 
+-------------------------------------------------------
+
+CREATE ROLE Admin1;
+CREATE ROLE Cashier;
+CREATE ROLE Inventory_Manager;
+
+
+-- Granting privileges to Admin role
+BEGIN
+    FOR tbl IN (SELECT table_name FROM user_tables) LOOP
+        EXECUTE IMMEDIATE 'GRANT SELECT, INSERT, UPDATE, DELETE ON ' || tbl.table_name || ' TO Admin';
+    END LOOP;
+END;
+/
+
+-- Role Admin & Cashier should only have access to order and pay bill tables
+GRANT SELECT, INSERT, UPDATE, DELETE ON ORDER_BILL TO Cashier;
+GRANT SELECT, INSERT, UPDATE, DELETE ON PAYMENT_BILL TO Cashier;
+
+-- Role Inventory Manager should have access to inventory and notification tables
+GRANT SELECT, INSERT, UPDATE, DELETE ON INVENTORY TO Inventory_Manager;
+GRANT SELECT, INSERT, UPDATE, DELETE ON NOTIFICATION TO Inventory_Manager;
+
+GRANT CONNECT TO HR;
+
+
+
+GRANT CREATE SESSION, CREATE VIEW, CREATE TABLE, ALTER SESSION, CREATE SEQUENCE TO Cashier;
+GRANT CREATE SYNONYM, CREATE DATABASE LINK, RESOURCE, UNLIMITED TABLESPACE TO Cashier;
+
+
+------------------------------------------------------------------------
+--  DROPPING ALL USERS (IF EXISTING CURRENTLY) - ONLY WHEN RE-RUNNING CODE
+------------------------------------------------------------------------
+DROP USER admin_user1 CASCADE;
+DROP USER cashier_user1 CASCADE;
+DROP USER inventory_manager_user1 CASCADE;
+
+CREATE USER admin_user1 IDENTIFIED BY BostonSpring2024#;
+CREATE USER cashier_user1 IDENTIFIED BY BostonSpring2024##;
+CREATE USER inventory_manager_user1 IDENTIFIED BY BostonSpring2024###;
+
+
+ALTER USER cashier_user1 DEFAULT TABLESPACE users QUOTA UNLIMITED ON users;
+ALTER USER cashier_user1 TEMPORARY TABLESPACE TEMP;
+-- Assign roles to users
+GRANT Admin1 TO admin_user1;
+GRANT Cashier TO cashier_user1;
+GRANT Inventory_Manager TO inventory_manager_user1;
+
