@@ -424,3 +424,24 @@ LEFT JOIN PAYMENT_BILL ON CUSTOMER.CUSTOMER_ID = PAYMENT_BILL.CUSTOMER_ID
 GROUP BY CUSTOMER.CUSTOMER_ID, FIRST_NAME, LAST_NAME;
 
 select * from Customer_Orders;
+
+
+-- Create users and grant appropriate permissions
+
+-- Create Admin user
+CREATE USER admin IDENTIFIED BY adminpassword;
+GRANT ALL PRIVILEGES TO admin;
+
+-- Create Inventory Manager user
+CREATE USER inventory_manager IDENTIFIED BY inventorypassword;
+GRANT SELECT, UPDATE ON INVENTORY TO inventory_manager;
+
+-- Create Cashier user
+CREATE USER cashier IDENTIFIED BY cashierpassword;
+GRANT SELECT ON Customer_Orders TO cashier;
+
+-- Ensure users have access to views
+GRANT SELECT ON Inventory_Status TO inventory_manager, admin;
+GRANT SELECT ON Top_Customers TO admin;
+GRANT SELECT ON Expiry_Drugs TO inventory_manager, admin;
+
