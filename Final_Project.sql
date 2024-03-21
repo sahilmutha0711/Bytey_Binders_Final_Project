@@ -356,6 +356,10 @@ VALUES ('EMP_NOTIF004', 'NOTIF004', 'EMP003');
 INSERT INTO EMPLOYEE_NOTIFICATION (EMP_NOTIF_ID, NOTIF_ID, EMP_ID) 
 VALUES ('EMP_NOTIF005', 'NOTIF005', 'EMP003');
 
+----------------------------------------------------------------------------------------
+-- Display all the tables 
+----------------------------------------------------------------------------------------
+
 SELECT * FROM INSURANCE;
 
 SELECT * FROM CUSTOMER;
@@ -435,3 +439,54 @@ ALTER USER inventory_manager_user1 QUOTA 10 M ON DATA;
 GRANT Pharmacy_Admin TO admin_user1;
 GRANT Cashier TO cashier_user1;
 GRANT Inventory_Manager TO inventory_manager_user1;
+
+----------------------------------------------------------------------------------------
+-- Creating views and dropping views if Exists
+----------------------------------------------------------------------------------------
+DROP VIEW IF EXISTS Inventory_Status;
+DROP VIEW IF EXISTS Top_Customers;
+DROP VIEW IF EXISTS Expiry_Drugs;
+DROP VIEW IF EXISTS Customer_Orders;
+
+//1 1.	Inventory Status: This will display information like drug names, quantities, and expiry dates only to the employee responsible for handling the inventory.
+
+select * from INVENTORY;
+
+CREATE VIEW Inventory_Status AS
+SELECT DRUG_NAME, INV_QUANTITY, EXPIRY_DATE
+FROM INVENTORY;
+
+SELECT * FROM Inventory_Status;
+
+//2 Top-Customers:
+
+CREATE VIEW Top_Customers AS
+SELECT CUSTOMER.CUSTOMER_ID, CUSTOMER.FIRST_NAME, CUSTOMER.LAST_NAME, SUM(PAYMENT_BILL.PATIENT_PAY) AS TOTAL_AMOUNT
+FROM PAYMENT_BILL
+JOIN CUSTOMER ON PAYMENT_BILL.CUSTOMER_ID = CUSTOMER.CUSTOMER_ID
+GROUP BY CUSTOMER.CUSTOMER_ID, CUSTOMER.FIRST_NAME, CUSTOMER.LAST_NAME
+ORDER BY TOTAL_AMOUNT DESC;
+
+
+select * from Top_Customers;
+
+//3 Expiry Drugs
+
+CREATE VIEW Expiry_Drugs AS
+SELECT DRUG_NAME, EXPIRY_DATE
+FROM INVENTORY
+WHERE EXPIRY_DATE <= SYSDATE + 30; -- Assuming "about to expire" means expiring within the next 30 days
+
+
+select * from Expiry_Drugs;
+
+
+//4 Customer Orders:
+
+CREATE VIEW Customer_Orders AS
+SELECT CUSTOMER.CUSTOMER_ID, FIRST_NAME, LAST_NAME, COUNT(ORDER_ID) AS TOTAL_ORDERS, SUM(TOTAL_AMOUNT) AS TOTAL_ORDER_AMOUNT
+FROM CUSTOMER
+LEFT JOIN PAYMENT_BILL ON CUSTOMER.CUSTOMER_ID = PAYMENT_BILL.CUSTOMER_ID
+GROUP BY CUSTOMER.CUSTOMER_ID, FIRST_NAME, LAST_NAME;
+
+select * from Customer_Orders;
