@@ -195,7 +195,6 @@ VALUES ('INS004', 'GHI Insurance', TO_DATE('2022-04-01', 'YYYY-MM-DD'), TO_DATE(
 
 INSERT INTO INSURANCE (INSURANCE_ID, COMPANY_NAME, START_DATE, END_DATE, INSURANCE_BALANCE) 
 VALUES ('INS005', 'JKL Insurance', TO_DATE('2022-05-01', 'YYYY-MM-DD'), TO_DATE('2023-05-01', 'YYYY-MM-DD'), 5500);
-SELECT * FROM CUSTOMER;
 -- Generate sample data for CUSTOMER table
 INSERT INTO CUSTOMER (CUSTOMER_ID, FIRST_NAME, LAST_NAME, GENDER, CITY, INSURANCE_ID) 
 VALUES ('CUST001', 'John', 'Doe', 'Male', 'New York', 'INS001');
@@ -379,17 +378,27 @@ SELECT * FROM NOTIFICATION;
 
 SELECT * FROM EMPLOYEE_NOTIFICATION;
 
--------------------------------------------------------
+----------------------------------------------------------------------------------------
+-- Dropping all the Users and Roles when rerun entire code
+----------------------------------------------------------------------------------------
+DROP ROLE Pharmacy_Admin;
+DROP ROLE Cashier;
+DROP ROLE Inventory_Manager;
 
-CREATE ROLE Admin1;
+-- Dropping existing users if they exist
+DROP USER admin_user1 CASCADE;
+DROP USER cashier_user1 CASCADE;
+DROP USER inventory_manager_user1 CASCADE;
+
+-- Creating Roles and assigning tables to roles, followed by assigning roles to users
+CREATE ROLE Pharmacy_Admin;
 CREATE ROLE Cashier;
 CREATE ROLE Inventory_Manager;
-
 
 -- Granting privileges to Admin role
 BEGIN
     FOR tbl IN (SELECT table_name FROM user_tables) LOOP
-        EXECUTE IMMEDIATE 'GRANT SELECT, INSERT, UPDATE, DELETE ON ' || tbl.table_name || ' TO Admin';
+        EXECUTE IMMEDIATE 'GRANT SELECT, INSERT, UPDATE, DELETE ON ' || tbl.table_name || ' TO Pharmacy_Admin';
     END LOOP;
 END;
 /
@@ -398,34 +407,31 @@ END;
 GRANT SELECT, INSERT, UPDATE, DELETE ON ORDER_BILL TO Cashier;
 GRANT SELECT, INSERT, UPDATE, DELETE ON PAYMENT_BILL TO Cashier;
 
+-- Grant INSERT privilege on additional tables for Cashier role
+GRANT INSERT ON CUSTOMER TO Cashier;
+GRANT INSERT ON PRESCRIPTION TO Cashier;
+GRANT INSERT ON PRESCRIBED_DRUGS TO Cashier;
+
 -- Role Inventory Manager should have access to inventory and notification tables
 GRANT SELECT, INSERT, UPDATE, DELETE ON INVENTORY TO Inventory_Manager;
 GRANT SELECT, INSERT, UPDATE, DELETE ON NOTIFICATION TO Inventory_Manager;
 
-GRANT CONNECT TO HR;
 
-
-
-GRANT CREATE SESSION, CREATE VIEW, CREATE TABLE, ALTER SESSION, CREATE SEQUENCE TO Cashier;
-GRANT CREATE SYNONYM, CREATE DATABASE LINK, RESOURCE, UNLIMITED TABLESPACE TO Cashier;
-
-
-------------------------------------------------------------------------
---  DROPPING ALL USERS (IF EXISTING CURRENTLY) - ONLY WHEN RE-RUNNING CODE
-------------------------------------------------------------------------
-DROP USER admin_user1 CASCADE;
-DROP USER cashier_user1 CASCADE;
-DROP USER inventory_manager_user1 CASCADE;
-
+-- Creating new users and granting resources to each
 CREATE USER admin_user1 IDENTIFIED BY BostonSpring2024#;
 CREATE USER cashier_user1 IDENTIFIED BY BostonSpring2024##;
 CREATE USER inventory_manager_user1 IDENTIFIED BY BostonSpring2024###;
 
+GRANT CONNECT, RESOURCE TO admin_user1;
+GRANT CONNECT, RESOURCE TO cashier_user1;
+GRANT CONNECT, RESOURCE TO inventory_manager_user1;
 
-ALTER USER cashier_user1 DEFAULT TABLESPACE users QUOTA UNLIMITED ON users;
-ALTER USER cashier_user1 TEMPORARY TABLESPACE TEMP;
--- Assign roles to users
-GRANT Admin1 TO admin_user1;
+-- Assigning database quota for the users
+ALTER USER admin_user1 QUOTA 50 M ON DATA;
+ALTER USER cashier_user1 QUOTA 10 M ON DATA;
+ALTER USER inventory_manager_user1 QUOTA 10 M ON DATA;
+
+-- Assigning roles to users
+GRANT Pharmacy_Admin TO admin_user1;
 GRANT Cashier TO cashier_user1;
 GRANT Inventory_Manager TO inventory_manager_user1;
-
