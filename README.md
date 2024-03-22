@@ -67,3 +67,30 @@ Several views have been created to provide simplified access to specific data wi
 - `Customer_Orders`: Provides summary information about customer orders including total orders and total order amounts. This view is accessible to Pharmacy Admins and Cashiers.
 
 These views offer convenient ways to retrieve relevant information from the database.
+
+## Steps
+
+1. Create Tables:
+This step involves creating multiple tables like INSURANCE, CUSTOMER, PRESCRIPTION, etc., with their respective columns and constraints.
+
+2. Insert Data into All Tables:
+After creating the tables, data is inserted into each table using INSERT INTO statements.
+
+3. Create New Users and Grant Resources to Each User:
+New users such as admin_user1, cashier_user1, and inventory_manager_user1 are created using CREATE USER statements.
+The CONNECT and RESOURCE privileges are granted to each user using GRANT statements.
+
+4. Assign Database Quota for the Users:
+Database quotas are assigned to users using ALTER USER statements, limiting the amount of data each user can store.
+
+5. Create Roles and Assign Tables to Roles:
+Roles like Pharmacy_Admin, Cashier, and Inventory_Manager are created using CREATE ROLE statements.
+Privileges (SELECT, INSERT, UPDATE, DELETE) are granted to each role for specific tables using GRANT statements.
+
+6. Assign Roles to Users:
+Roles are assigned to users using GRANT statements, enabling users to inherit the privileges associated with their assigned roles.
+
+7. Create Views and Dropping Views if Exists:
+Views like Inventory_Status, Top_Customers, Expiry_Drugs, and Customer_Orders are created using CREATE VIEW statements.
+These views provide specific data perspectives and are tailored to different user roles.
+Prior to creating each view, existing views with the same name are dropped to ensure consistency.
